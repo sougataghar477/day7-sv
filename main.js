@@ -1,4 +1,5 @@
-let countries= [
+// Countries list for country dropdown
+let countries = [
   "Afghanistan",
   "Albania",
   "Algeria",
@@ -191,22 +192,9 @@ let countries= [
   "Yemen",
   "Zambia",
   "Zimbabwe"
-]
+];
 
-
-
-// async function loadCountries() {
-//   try {
-//     const response = await fetch("/countries.json");
-//     countries = await response.json();
-//     console.log(countries);
-    
-//   } catch (err) {
-//     console.error(err);
-//   }
-// }
-
-// loadCountries();
+// Indian states list (used only when India is selected)
 const indianStates = [
   "Andhra Pradesh",
   "Arunachal Pradesh",
@@ -247,249 +235,533 @@ const indianStates = [
 ];
 
 const body = document.body;
+
+// Input fields config with validation logic
 const fields = [
-  { name: "Full Name", type: "text",validation:function(e,errorElement){
-    if(e.target.value.trim().length<3){
+  // Full Name input configuration
+  {
+    name: "Full Name",
+    type: "text",
+    validation: (input, errorElement) => {
+      // Trim spaces and check minimum length
+      if (input.value.trim().length < 3) {
         errorElement.textContent = "Name must be 3 characters atleast";
+        return false;
+      }
+
+      // Clear error if valid
+      errorElement.textContent = "";
+      return true;
     }
-    else{
-        errorElement.textContent = "";
-    }
-  } },
-  { name: "Email Address", type: "email",validation:(e,errorElement)=>{
-    const isEmailCorrect = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(e.target.value.trim());
-    if(!isEmailCorrect){
+  },
+
+  // Email input configuration
+  {
+    name: "Email Address",
+    type: "email",
+    validation: (input, errorElement) => {
+      // Regex to check valid email format
+      const isEmailCorrect =
+        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
+          input.value.trim()
+        );
+
+      // Show error if email format is incorrect
+      if (!isEmailCorrect) {
         errorElement.textContent = "Please enter correct Email";
+        return false;
+      }
+
+      // Clear error if valid
+      errorElement.textContent = "";
+      return true;
     }
-    else{
-        errorElement.textContent = "";
+  },
+
+  // Mobile number input configuration
+  {
+    name: "Mobile Number",
+    type: "tel",
+    validation: (input, errorElement) => {
+      // Regex to allow only 10 digit numbers
+      const isNumber = /^[0-9]{10}$/.test(input.value.trim());
+
+      // Show error if number is not exactly 10 digits
+      if (!isNumber) {
+        errorElement.textContent = "Please Enter Exact 10 digits";
+        return false;
+      }
+
+      // Clear error if valid
+      errorElement.textContent = "";
+      return true;
     }
+  },
 
-  } },
-  { name: "Mobile Number", type: "tel",validation:(e,errorElement)=>{
-    const number = e.target.value.trim();
-    const isNumber = /^[0-9]{10}$/.test(number);
-    // console.log(isNumber)
-    isNumber?errorElement.textContent = "":errorElement.textContent = "Please Enter Exact 10 digits";
-  } },
-  { name: "Date of Birth", type: "date",validation:(e,errorElement)=>{
-        const dob = new Date(e.target.value);
-        const today = new Date();
-        const eighteenYearsMs = 18 * 365 * 24 * 60 * 60 * 1000;
-        const msDiff = today - dob;
-        const isUserOlderthanEighteen = msDiff >= eighteenYearsMs;
-        console.log(isUserOlderthanEighteen);
-        isUserOlderthanEighteen?errorElement.textContent="":errorElement.textContent="User Must be 18+";
-  } },
-  { name: "Password", type: "password",validation: (e, errorElement) => {
-  const password = e.target.value.trim();
-  const confirmInput =
-    e.target.parentElement.nextElementSibling?.querySelector("input");
+  // Date of birth input configuration
+  {
+    name: "Date of Birth",
+    type: "date",
+    validation: (input, errorElement) => {
+      // Convert selected date into Date object
+      const dob = new Date(input.value);
 
-  let message = "Password must contain:";
+      // Get current date
+      const today = new Date();
 
-  if (password.length < 8) {
-    message += " at least 8 characters,";
-  }
-  if (!/[A-Z]/.test(password)) {
-    message += " one uppercase letter,";
-  }
-  if (!/[a-z]/.test(password)) {
-    message += " one lowercase letter,";
-  }
-  if (!/[0-9]/.test(password)) {
-    message += " one digit,";
-  }
+      // Milliseconds equivalent of 18 years
+      const eighteenYearsMs = 18 * 365 * 24 * 60 * 60 * 1000;
 
-  if (confirmInput && confirmInput.value && password !== confirmInput.value) {
-    message += " passwords must match,";
-  }
+      // Check if user is younger than 18
+      if (today - dob < eighteenYearsMs) {
+        errorElement.textContent = "User Must be 18+";
+        return false;
+      }
 
-  if (message !== "Password must contain:") {
-    errorElement.textContent = message.slice(0, -1);
-  } else {
-    errorElement.textContent = "";
-  }
-}
-,
-  showPassword:(e)=>{
-        let inputType = e.target.previousElementSibling.type;
-        if(inputType==="password"){
-            e.target.previousElementSibling.type="text";
-        }
-        else{
-           e.target.previousElementSibling.type="password" 
-        }
-  }
-},
-  { name: "Confirm Password", type: "password",
-    validation: (e, errorElement) => {
-  const confirmPassword = e.target.value.trim();
-  const passwordInput =
-    e.target.parentElement.previousElementSibling.querySelector("input");
-
-  let message = "Password must contain:";
-
-  if (confirmPassword.length < 8) {
-    message += " at least 8 characters,";
-  }
-  if (!/[A-Z]/.test(confirmPassword)) {
-    message += " one uppercase letter,";
-  }
-  if (!/[a-z]/.test(confirmPassword)) {
-    message += " one lowercase letter,";
-  }
-  if (!/[0-9]/.test(confirmPassword)) {
-    message += " one digit,";
-  }
-
-  if (confirmPassword !== passwordInput.value) {
-    message += " passwords must match,";
-  }
-
-  if (message !== "Password must contain:") {
-    errorElement.textContent = message.slice(0, -1);
-  } else {
-    errorElement.textContent = "";
-  }
-}
-,
-    showPassword:(e)=>{
-        let inputType = e.target.previousElementSibling.type;
-        if(inputType==="password"){
-            e.target.previousElementSibling.type="text";
-        }
-        else{
-           e.target.previousElementSibling.type="password" 
-        }
+      // Clear error if valid
+      errorElement.textContent = "";
+      return true;
     }
-   }
+  },
+
+  // Password input configuration
+  {
+    name: "Password",
+    type: "password",
+    validation: (input, errorElement) => {
+      // Get trimmed password value
+      const password = input.value.trim();
+
+      // Get confirm password input from next field
+      const confirmInput =
+        input.parentElement.nextElementSibling?.querySelector("input");
+
+      // Base error message
+      let message = "Password must contain:";
+
+      // Check minimum length of password
+      if (password.length < 8) {
+        message += " " + (8 - ~~input.value.length) + " characters more,";
+      }
+
+      // Check for at least one uppercase letter
+      if (!/[A-Z]/.test(password)) {
+        message += " one uppercase letter,";
+      }
+
+      // Check for at least one lowercase letter
+      if (!/[a-z]/.test(password)) {
+        message += " one lowercase letter,";
+      }
+
+      // Check for at least one digit
+      if (!/[0-9]/.test(password)) {
+        message += " one digit,";
+      }
+
+      // If confirm password exists, check if both passwords match
+      if (confirmInput && confirmInput.value && password !== confirmInput.value) {
+        message += " passwords must match,";
+      }
+
+      // If message changed, show error
+      if (message !== "Password must contain:") {
+        errorElement.textContent = message.slice(0, -1);
+        return false;
+      }
+
+      // Clear error if password is valid
+      errorElement.textContent = "";
+      return true;
+    },
+
+    // Show / hide password functionality
+    showPassword: input => {
+      input.type = input.type === "password" ? "text" : "password";
+    }
+  },
+
+  // Confirm Password input configuration
+  {
+    name: "Confirm Password",
+    type: "password",
+    validation: (input, errorElement) => {
+      // Get original password input from previous field
+      const passwordInput =
+        input.parentElement.previousElementSibling.querySelector("input");
+
+      // Base error message
+      let message = "Password must contain:";
+
+      // Check minimum length
+      if (input.value.length < 8) {
+        message += " " + (8 - ~~input.value.length) + " characters more,";
+      }
+
+      // Check uppercase letter
+      if (!/[A-Z]/.test(input.value)) {
+        message += " one uppercase letter,";
+      }
+
+      // Check lowercase letter
+      if (!/[a-z]/.test(input.value)) {
+        message += " one lowercase letter,";
+      }
+
+      // Check digit
+      if (!/[0-9]/.test(input.value)) {
+        message += " one digit,";
+      }
+
+      // Check if confirm password matches original password
+      if (input.value !== passwordInput.value) {
+        message += " passwords must match,";
+      }
+
+      // If any rule fails, show error
+      if (message !== "Password must contain:") {
+        errorElement.textContent = message.slice(0, -1);
+        return false;
+      }
+
+      // Clear error if valid
+      errorElement.textContent = "";
+      return true;
+    },
+
+    // Show / hide confirm password
+    showPassword: input => {
+      input.type = input.type === "password" ? "text" : "password";
+    }
+  }
 ];
-const genders = ["Male","Female"];
-const skills =["HTML","CSS","JS"];
 
-function createElement(element){
-    return document.createElement(element);
+
+const genders = ["Male", "Female"];
+const skills = ["HTML", "CSS", "JS"];
+
+// Helper function to create elements
+function createElement(element) {
+  return document.createElement(element);
 }
-let form = createElement("FORM");
-form.classList.add("shadow-2xl","p-4","rounded-2xl","grid","grid-cols-1","md:grid-cols-2","gap-4","max-w-200","w-full");
+
+// Create form element
+const form = createElement("FORM");
+
+form.classList.add(
+  "shadow-2xl",
+  "p-4",
+  "rounded-2xl",
+  "grid",
+  "grid-cols-1",
+  "md:grid-cols-2",
+  "gap-4",
+  "max-w-200",
+  "w-full"
+);
+
+// Attach submit handler
+form.addEventListener("submit", submitFormHandler);
+
+// Append form to body
 body.appendChild(form);
 
-function generateInputFields(){
-    fields.forEach((field) => {
-       let div = createElement("DIV");
-       let label = createElement("LABEL");
-       label.textContent = field.name;
-       label.classList.add("block","font-bold","mb-2");
-       label.htmlFor = field.name.toLowerCase().split(" ").join("-");
-       let input = createElement("INPUT");
-       input.type = field.type;
-       input.name = field.name.toLowerCase().split(" ").join("-");
-       input.id = field.name.toLowerCase().split(" ").join("-");
-       input.classList.add("border-2","p-4","rounded-2xl","w-full");
-       let error = createElement("P");
-       error.textContent = "";
-       error.classList.add("text-red-500");
+// Generate text and password inputs
+function generateInputFields() {
+  fields.forEach(field => {
+    const div = createElement("DIV");
+    const label = createElement("LABEL");
+    const input = createElement("INPUT");
+    const errorElement = createElement("P");
 
-       div.appendChild(label);
-       div.appendChild(input);
-        if(field.type==="password"){
-        let togglePassword = createElement("DIV");
-        togglePassword.textContent = "Show Password";
-        togglePassword.addEventListener("mousedown",(e)=>{
-            field.showPassword(e);
-        })
-        div.appendChild(togglePassword);
-       } 
-       div.appendChild(error);
-       form.appendChild(div);
-       input.addEventListener("keyup",(e)=>{ field?.validation(e,error) });
-       input.addEventListener("change",(e)=>{ field?.validation(e,error) });
-       input.addEventListener("blur",(e)=>{ field?.validation(e,error) });
-   }) 
+    label.textContent = field.name;
+    label.classList.add("block", "font-bold", "mb-2");
+
+    input.type = field.type;
+    input.name = field.name.toLowerCase().split(" ").join("-");
+    input.id = input.name;
+    input.classList.add("border-2", "p-4", "rounded-2xl", "w-full");
+
+    errorElement.classList.add("text-red-500");
+
+    div.appendChild(label);
+    div.appendChild(input);
+
+    // Show / hide password option
+    if (field.type === "password") {
+      const toggle = createElement("DIV");
+      toggle.textContent = "Show Password";
+      toggle.addEventListener("mousedown", () =>{
+        field.showPassword(input);
+        if(toggle.textContent==="Show Password"){
+            toggle.textContent="Hide Password";
+        }
+        else{
+            toggle.textContent="Show Password";
+        }
+      });
+      div.appendChild(toggle);
+    }
+
+    div.appendChild(errorElement);
+    form.appendChild(div);
+
+    // Validate input on user interaction
+    ["keyup", "change", "blur"].forEach(e =>
+      input.addEventListener(e, () =>
+        field.validation(input, errorElement)
+      )
+    );
+  });
 }
+
+// Generate skills dropdown
+function generateMultiInputsWithMultipleOptions() {
+  const wrapper = createElement("DIV");
+  const skillsDropdown = createElement("SELECT");
+  const errorElement = createElement("P");
+
+  skillsDropdown.name = "skills";
+  skillsDropdown.classList.add("w-full", "border-2", "p-4", "rounded-2xl");
+  errorElement.classList.add("text-red-500");
+
+  const placeHolder = createElement("OPTION");
+  placeHolder.value = "";
+  placeHolder.textContent = "Select A Skill";
+  placeHolder.disabled = true;
+  placeHolder.selected = true;
+
+  skillsDropdown.appendChild(placeHolder);
+
+  skills.forEach(skill => {
+    const option = createElement("OPTION");
+    option.value = skill;
+    option.textContent = skill;
+    skillsDropdown.appendChild(option);
+  });
+
+  skillsDropdown.addEventListener("change", () => {
+    errorElement.textContent = "";
+  });
+
+  wrapper.appendChild(skillsDropdown);
+  wrapper.appendChild(errorElement);
+  form.appendChild(wrapper);
+}
+
+// Generate country dropdown
 function generateCountryDropdown(countriesData) {
+  const wrapper = createElement("DIV");
   const countryDropdown = createElement("SELECT");
+  const errorElement = createElement("P");
+
   countryDropdown.name = "country";
+  countryDropdown.classList.add("w-full", "border-2", "p-4", "rounded-2xl");
+  errorElement.classList.add("text-red-500");
+
+  const placeHolder = createElement("OPTION");
+  placeHolder.value = "";
+  placeHolder.textContent = "Select A Country";
+  placeHolder.disabled = true;
+  placeHolder.selected = true;
+
+  countryDropdown.appendChild(placeHolder);
+
   countriesData.forEach(country => {
     const option = createElement("OPTION");
-    option.textContent = country;
     option.value = country;
+    option.textContent = country;
     countryDropdown.appendChild(option);
   });
 
-  countryDropdown.classList.add("w-full","border-2","p-4","rounded-2xl");
-  countryDropdown.addEventListener("change",(e)=>{
-    if(e.target.value==="India"){
-        generateIndianStateDropdown()
+  countryDropdown.addEventListener("change", e => {
+    if (e.target.value === "India") {
+      generateIndianStateDropdown(e);
+    } else {
+      if (wrapper.nextElementSibling?.tagName === "SELECT") {
+        wrapper.nextElementSibling.remove();
+      }
     }
-    else{
-        if(e.target.nextElementSibling){
-            e.target.nextElementSibling.remove();
-        }
-    }
-  })
-  form.appendChild(countryDropdown);
+    errorElement.textContent = "";
+  });
+
+  wrapper.appendChild(countryDropdown);
+  wrapper.appendChild(errorElement);
+  form.appendChild(wrapper);
 }
-function generateMultiInputsWithMultipleOptions(){
-    let skillsDropdown = createElement("SELECT");
-    skillsDropdown.classList.add("w-full","border-2","p-4","rounded-2xl")
-    skills.forEach(skill => {
-        let option = createElement("OPTION");
-        option.textContent = skill;
-        option.value = skill;
-        skillsDropdown.appendChild(option);
-    });
-    form.appendChild(skillsDropdown);
-    
+
+// Generate Indian states dropdown
+function generateIndianStateDropdown(e) {
+  const wrapper = createElement("DIV");
+  const stateDropdown = createElement("SELECT");
+  const errorElement = createElement("P");
+
+  stateDropdown.name = "indian-states";
+  stateDropdown.classList.add("w-full", "border-2", "p-4", "rounded-2xl");
+  errorElement.classList.add("text-red-500");
+
+  const placeHolder = createElement("OPTION");
+  placeHolder.value = "";
+  placeHolder.textContent = "Select a State";
+  placeHolder.disabled = true;
+  placeHolder.selected = true;
+
+  stateDropdown.appendChild(placeHolder);
+
+  indianStates.forEach(state => {
+    const option = createElement("OPTION");
+    option.value = state;
+    option.textContent = state;
+    stateDropdown.appendChild(option);
+  });
+
+  stateDropdown.addEventListener("change", () => {
+    errorElement.textContent = "";
+  });
+
+  wrapper.appendChild(stateDropdown);
+  wrapper.appendChild(errorElement);
+
+  e.target.parentElement.after(wrapper);
 }
+
+// Generate gender radio inputs
 function generateRadioInputs(name, options) {
   const wrapper = createElement("DIV");
-  
- 
-  const error = createElement("P");
-  error.classList.add("text-red-500", "mt-1");
+  const errorElement = createElement("P");
+
+  errorElement.classList.add("text-red-500");
 
   options.forEach(option => {
     const label = createElement("LABEL");
     const radio = createElement("INPUT");
 
     radio.type = "radio";
-    radio.name = name;       
+    radio.name = name;
     radio.value = option;
     label.classList.add("mr-4");
- 
-    label.appendChild(radio);
-    label.append(option);
 
- 
     radio.addEventListener("change", () => {
-      error.textContent = "";  
+      errorElement.textContent = "";
     });
 
+    label.appendChild(radio);
+    label.append(option);
     wrapper.appendChild(label);
   });
 
- 
-  wrapper.appendChild(error);
+  wrapper.appendChild(errorElement);
   form.appendChild(wrapper);
-
- 
 }
 
-function generateIndianStateDropdown(){
-    let stateDropdown = createElement("SELECT");
-    stateDropdown.name ="indianstates";
-    stateDropdown.classList.add("w-full","border-2","p-4","rounded-2xl")
-    indianStates.forEach(state =>{
-        let stateOption = createElement("OPTION");
-        stateOption.textContent = state;
-        stateOption.value = state;
-        stateDropdown.appendChild(stateOption);
-    })
-    form.appendChild(stateDropdown);
+// Generate terms and conditions checkbox
+function generateTermsAndConditions() {
+  const label = createElement("LABEL");
+  const input = createElement("INPUT");
+
+  input.type = "checkbox";
+  label.appendChild(input);
+  label.append("Terms and Conditions");
+  form.appendChild(label);
+
+  input.addEventListener("change", e => {
+    submitBtn.disabled = !e.target.checked;
+  });
 }
+
+let submitBtn;
+
+// Generate submit button
+function generateFormSubmitter() {
+  submitBtn = createElement("BUTTON");
+
+  submitBtn.type = "submit";
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Submit";
+
+  submitBtn.classList.add(
+    "disabled:bg-slate-600",
+    "bg-black",
+    "text-white",
+    "md:col-span-2",
+    "p-4",
+    "rounded-2xl"
+  );
+
+  form.appendChild(submitBtn);
+}
+
+// Form submit handler
+function submitFormHandler(e) {
+  e.preventDefault();
+
+  let isThereAnyError = false;
+  let isGenderSelected = false;
+  let genderErrorMessage;
+
+  const formChildren = Array.from(e.target.children);
+
+  // Collect input fields
+  const inputFields = formChildren
+    .map(a => a.children[1]?.tagName === "INPUT" ? a.children[1] : undefined)
+    .filter(Boolean);
+
+  // Collect dropdowns
+  const dropDowns = formChildren
+    .map(a => a.children[0]?.tagName === "SELECT" ? a.children[0] : null)
+    .filter(Boolean);
+
+  dropDowns.forEach(dropDown => checkDropdownValue(dropDown));
+
+  // Validate text inputs
+  for (let i = 0; i < inputFields.length; i++) {
+    fields[i].validation(
+      inputFields[i],
+      inputFields[i].nextElementSibling.tagName === "P"
+        ? inputFields[i].nextElementSibling
+        : inputFields[i].nextElementSibling.nextElementSibling
+    );
+  }
+
+  // Gender validation
+  const selectedGenders = document.querySelectorAll('input[name="gender"]');
+
+  selectedGenders.forEach(radio => {
+    genderErrorMessage =
+      radio.parentElement.parentElement.querySelector("p");
+
+    if (radio.checked) {
+      isGenderSelected = true;
+    }
+  });
+
+  if (!isGenderSelected) {
+    genderErrorMessage.textContent = "Select A Gender";
+  }
+
+  // Check if any error message exists
+  document.querySelectorAll(".text-red-500").forEach(el => {
+    if (el.textContent !== "") {
+      isThereAnyError = true;
+    }
+  });
+
+  if (!isThereAnyError) {
+    console.log(new FormData(e.target));
+  }
+}
+
+// Dropdown validation
+function checkDropdownValue(element) {
+  if (element.value === "") {
+    element.nextElementSibling.textContent = "Please Select An Option";
+  }
+}
+
+// Initialize form
 generateInputFields();
 generateMultiInputsWithMultipleOptions();
 generateCountryDropdown(countries);
 generateRadioInputs("gender", genders);
+generateTermsAndConditions();
+generateFormSubmitter();
