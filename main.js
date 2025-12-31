@@ -758,6 +758,7 @@ function submitFormHandler(e) {
 
   // Validate inputs
   for (let i = 0; i < inputFields.length; i++) {
+    fields[i].hasUserTouchedAField = true;
     fields[i].validation(
       inputFields[i],
       inputFields[i].nextElementSibling.tagName === "P"
