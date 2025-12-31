@@ -235,14 +235,17 @@ const indianStates = [
 ];
 
 const body = document.body;
-
+let skillsDropdownBlurred = false;
+let countriesDropdownBlurred = false;
 // Input fields config with validation logic
 const fields = [
   // Full Name input configuration
   {
     name: "Full Name",
     type: "text",
-    validation: (input, errorElement) => {
+    hasUserTouchedAField:false,
+    validation: function (input, errorElement) {
+      if(this.hasUserTouchedAField){
       // Trim spaces and check minimum length
       if (input.value.trim().length < 3) {
         errorElement.textContent = "Name must be 3 characters atleast";
@@ -252,14 +255,16 @@ const fields = [
       // Clear error if valid
       errorElement.textContent = "";
       return true;
-    }
+    }}
   },
 
   // Email input configuration
   {
     name: "Email Address",
     type: "email",
-    validation: (input, errorElement) => {
+    hasUserTouchedAField:false,
+    validation: function (input, errorElement) {
+      if(this.hasUserTouchedAField){
       // Regex to check valid email format
       const isEmailCorrect =
         /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
@@ -276,13 +281,16 @@ const fields = [
       errorElement.textContent = "";
       return true;
     }
+  }
   },
 
   // Mobile number input configuration
   {
     name: "Mobile Number",
     type: "tel",
-    validation: (input, errorElement) => {
+    hasUserTouchedAField:false,
+    validation: function (input, errorElement) {
+      if(this.hasUserTouchedAField){
       // Regex to allow only 10 digit numbers
       const isNumber = /^[0-9]{10}$/.test(input.value.trim());
 
@@ -294,7 +302,7 @@ const fields = [
 
       // Clear error if valid
       errorElement.textContent = "";
-      return true;
+      return true;}
     }
   },
 
@@ -302,8 +310,10 @@ const fields = [
   {
     name: "Date of Birth",
     type: "date",
-    validation: (input, errorElement) => {
+    hasUserTouchedAField:false,
+    validation: function (input, errorElement) {
       // Convert selected date into Date object
+      if(this.hasUserTouchedAField){
       const dob = new Date(input.value);
 
       // Get current date
@@ -311,24 +321,31 @@ const fields = [
 
       // Milliseconds equivalent of 18 years
       const eighteenYearsMs = 18 * 365 * 24 * 60 * 60 * 1000;
-
-      // Check if user is younger than 18
-      if (today - dob < eighteenYearsMs) {
-        errorElement.textContent = "User Must be 18+";
-        return false;
+      if(!input.value){
+        errorElement.textContent = "Select Date Of Birth";
+      }
+      else{
+        // Check if user is younger than 18
+        if (today - dob < eighteenYearsMs) {
+          errorElement.textContent = "User Must be 18+";
+          return false;
+        }
+        // Clear error if valid
+        else{
+          errorElement.textContent = "";
+        }
       }
 
-      // Clear error if valid
-      errorElement.textContent = "";
-      return true;
-    }
+     
+    }}
   },
 
   // Password input configuration
   {
     name: "Password",
     type: "password",
-    validation: (input, errorElement) => {
+    hasUserTouchedAField:false,
+    validation: function (input, errorElement) {
       // Get trimmed password value
       const password = input.value.trim();
 
@@ -338,7 +355,7 @@ const fields = [
 
       // Base error message
       let message = "Password must contain:";
-
+      if(this.hasUserTouchedAField){
       // Check minimum length of password
       if (password.length < 8) {
         message += " " + (8 - ~~input.value.length) + " characters more,";
@@ -373,10 +390,11 @@ const fields = [
       // Clear error if password is valid
       errorElement.textContent = "";
       return true;
+    }
     },
 
     // Show / hide password functionality
-    showPassword: input => {
+    showPassword: function (input) {
       input.type = input.type === "password" ? "text" : "password";
     }
   },
@@ -385,14 +403,15 @@ const fields = [
   {
     name: "Confirm Password",
     type: "password",
-    validation: (input, errorElement) => {
+    hasUserTouchedAField:false,
+    validation: function (input, errorElement) {
       // Get original password input from previous field
       const passwordInput =
         input.parentElement.previousElementSibling.querySelector("input");
 
       // Base error message
       let message = "Password must contain:";
-
+      if(this.hasUserTouchedAField){
       // Check minimum length
       if (input.value.length < 8) {
         message += " " + (8 - ~~input.value.length) + " characters more,";
@@ -427,10 +446,11 @@ const fields = [
       // Clear error if valid
       errorElement.textContent = "";
       return true;
+    }
     },
 
     // Show / hide confirm password
-    showPassword: input => {
+    showPassword: function (input) {
       input.type = input.type === "password" ? "text" : "password";
     }
   }
@@ -507,16 +527,25 @@ function generateInputFields() {
     form.appendChild(div);
 
     // Validate input on user interaction
-    ["keyup", "change", "blur"].forEach(e =>
-      input.addEventListener(e, () =>
-        field.validation(input, errorElement)
-      )
-    );
+    ["keyup", "change", "blur"].forEach(e =>{
+      if(e==="blur"){ 
+        input.addEventListener(e, () =>{
+          field.hasUserTouchedAField=true;
+          field.validation(input, errorElement);
+
+        })
+      }
+      else{
+        input.addEventListener(e, () =>
+          field.validation(input, errorElement)
+        )
+      }
+    });
   });
 }
 
 // Generate skills dropdown
-function generateMultiInputsWithMultipleOptions() {
+function generateskillsDropdown() {
   const wrapper = createElement("DIV");
   const skillsDropdown = createElement("SELECT");
   const errorElement = createElement("P");
@@ -547,6 +576,11 @@ function generateMultiInputsWithMultipleOptions() {
   wrapper.appendChild(skillsDropdown);
   wrapper.appendChild(errorElement);
   form.appendChild(wrapper);
+      skillsDropdown.addEventListener("blur",()=>{
+    if(!skillsDropdown.value){
+      errorElement.textContent = "Please Select a Skill";
+    }
+  })
 }
 
 // Generate country dropdown
@@ -588,6 +622,11 @@ function generateCountryDropdown(countriesData) {
   wrapper.appendChild(countryDropdown);
   wrapper.appendChild(errorElement);
   form.appendChild(wrapper);
+    countryDropdown.addEventListener("blur",()=>{
+    if(!countryDropdown.value){
+      errorElement.textContent = "Please Select a Country";
+    }
+  })
 }
 
 // Generate Indian states dropdown
@@ -618,7 +657,11 @@ function generateIndianStateDropdown(e) {
   stateDropdown.addEventListener("change", () => {
     errorElement.textContent = "";
   });
-
+  stateDropdown.addEventListener("blur",()=>{
+        if(!stateDropdown.value){
+      errorElement.textContent = "Please Select a State";
+    }
+  })
   wrapper.appendChild(stateDropdown);
   wrapper.appendChild(errorElement);
 
@@ -760,7 +803,7 @@ function checkDropdownValue(element) {
 
 // Initialize form
 generateInputFields();
-generateMultiInputsWithMultipleOptions();
+generateskillsDropdown();
 generateCountryDropdown(countries);
 generateRadioInputs("gender", genders);
 generateTermsAndConditions();
