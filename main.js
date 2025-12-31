@@ -756,7 +756,7 @@ function submitFormHandler(e) {
 
   dropDowns.forEach(dropDown => checkDropdownValue(dropDown));
 
-  // Validate text inputs
+  // Validate inputs
   for (let i = 0; i < inputFields.length; i++) {
     fields[i].validation(
       inputFields[i],
